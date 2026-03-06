@@ -1,9 +1,12 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import org.hibernate.annotations.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name = "Books")
 
 public class Book {
@@ -18,6 +21,11 @@ public class Book {
     private String image;
     private Double price;
     private Long stock;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties("books")
+    private Category category;
 
     public Book() {}
 

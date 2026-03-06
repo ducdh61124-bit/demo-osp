@@ -1,9 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.configuration.BookstoreAppPropertiesConfiguration;
 import com.example.demo.entity.Book;
 import com.example.demo.service.BookService;
-import com.example.demo.dto.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -22,9 +20,6 @@ public class BookController {
     @Autowired
     private MessageSource messageSource;
 
-    @Autowired
-    private BookstoreAppPropertiesConfiguration appProperties;
-
     // 1. Lấy tất cả danh sách sách - GET
     @GetMapping
     public List<Book> getAllBooks() {
@@ -37,19 +32,7 @@ public class BookController {
         return bookService.findBookById(id);
     }
 
-    // 3. Lấy thông tin hệ thống - GET
-    @GetMapping("/system-info")
-    public ResponseEntity<ApiResponse> getSystemInfo() {
-        ApiResponse response = new ApiResponse(
-                200,
-                "Lấy thông tin hệ thống thành công",
-                appProperties,
-                null
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    // 4. Thêm mới sách - POST
+    // 3. Thêm mới sách - POST
     @PostMapping
     public ResponseEntity<String> saveBook(@RequestBody Book book) {
         Book savedBook = bookService.saveBook(book);
@@ -57,7 +40,7 @@ public class BookController {
         return ResponseEntity.ok(msg + ": " + savedBook.getTitle());
     }
 
-    // 5. Sửa thông tin sách - PUT
+    // 4. Sửa thông tin sách - PUT
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@RequestBody Book newInfo, @PathVariable Integer id) {
         Book bookCurrently = bookService.findBookById(id);
@@ -69,10 +52,11 @@ public class BookController {
         if (newInfo.getStock() != null) bookCurrently.setStock(newInfo.getStock());
 
         bookService.saveBook(bookCurrently);
-        return ResponseEntity.ok("Update success!");
+        String msg = messageSource.getMessage("book.update.success", null, LocaleContextHolder.getLocale());
+        return ResponseEntity.ok(msg);
     }
 
-    // 6. Xóa sách - DELETE
+    // 5. Xóa sách - DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBookById(@PathVariable Integer id) {
         bookService.findBookById(id);

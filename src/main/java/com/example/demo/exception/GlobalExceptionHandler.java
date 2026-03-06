@@ -17,10 +17,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiResponse handleNotFound(ResourceNotFoundException ex) {
-        Map<String, Object> response = new HashMap<>();
-
-        String msg = messageSource.getMessage("book.notfound", null, LocaleContextHolder.getLocale());
-
+        String msg = messageSource.getMessage(ex.getMessage(), ex.getArgs(), LocaleContextHolder.getLocale());
         return new ApiResponse(404, msg, null, "Not Found");
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse handleRuntimeException(RuntimeException ex) {
+        String msg;
+        try {
+            msg = messageSource.getMessage(ex.getMessage(), null, LocaleContextHolder.getLocale());
+        } catch (Exception e) {
+            msg = ex.getMessage();
+        }
+        return new ApiResponse(400, msg, null, "Bad Request");
     }
 }

@@ -19,13 +19,20 @@ public class BookService {
 
     //Lưu Sách
     public Book saveBook(Book book){
+        if (book.getId() == null) {
+            if (bookRepository.existsByTitle(book.getTitle()))
+                throw new RuntimeException("book.title.exists");
+        } else {
+            if (bookRepository.existsByTitleAndIdNot(book.getTitle(), book.getId()))
+                throw new RuntimeException("book.title.exists");
+        }
         return bookRepository.save(book);
     }
 
     //Tìm Sách theo ID
     public Book findBookById(Integer id) {
         return bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("book.notfound", id));
     }
 
     //Xóa Sách

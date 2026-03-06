@@ -1,7 +1,13 @@
 package com.example.demo.exception;
 
+import lombok.Getter;
+
+@Getter
 public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(String message) {
+    private final Object[] args;
+
+    public ResourceNotFoundException(String message, Object... args) {
         super(message);
+        this.args = args;
     }
 }
