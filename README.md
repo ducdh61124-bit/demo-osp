@@ -1,5 +1,5 @@
-# Bookstore Management System 
-Xây dựng hệ thống quản lý sách 
+# Book management and distribution system (Backend)
+Hệ thống quản lý và phát hành sách
 
 ## Công nghệ sử dụng
 * **Ngôn ngữ:** Java (Last version)
