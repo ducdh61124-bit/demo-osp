@@ -13,7 +13,7 @@ public class BookService {
     private BookRepository bookRepository;
 
     //Lấy danh sách Sách
-    public List<Book> findAll(){
+    public List<Book> findAllByOrderByTitleAsc(){
         return bookRepository.findAll();
     }
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
@@ -23,7 +24,7 @@ public class BookController {
     // 1. Lấy tất cả danh sách sách - GET
     @GetMapping
     public List<Book> getAllBooks() {
-        return bookService.findAll();
+        return bookService.findAllByOrderByTitleAsc();
     }
 
     // 2. Lấy chi tiết - GET
