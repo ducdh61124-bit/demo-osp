@@ -14,6 +14,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private HistoryService historyService;
+
     // 1. Tìm User theo Username
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
@@ -23,6 +26,7 @@ public class UserService {
     public User checkLogin(String username, String password) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user != null && user.getPassword().equals(password)) {
+            historyService.logAction("LOGIN", "AUTH", user.getUsername(), user.getUsername(), "Đăng nhập hệ thống thành công");
             return user;
         }
         return null;
@@ -44,12 +48,16 @@ public class UserService {
         if (newUser.getPhone() != null && userRepository.existsByPhone(newUser.getPhone())) {
             throw new RuntimeException("user.phone.exists");
         }
-        return userRepository.save(newUser);
+
+        User savedUser = userRepository.save(newUser);
+
+        historyService.logAction("CREATE", "USER", savedUser.getUsername(), "admin", "Tạo tài khoản: " + savedUser.getUsername());
+
+        return savedUser;
     }
 
     // 5. Cập nhật - PUT (Dùng cho cả sửa Profile và Quên mật khẩu)
     public User updateUser(Long id, User updatedInfo) {
-
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("user.notfound", id));
 
@@ -68,14 +76,18 @@ public class UserService {
         if (updatedInfo.getPhone() != null) existingUser.setPhone(updatedInfo.getPhone());
         if (updatedInfo.getEmail() != null) existingUser.setEmail(updatedInfo.getEmail());
 
-        return userRepository.save(existingUser);
+        User savedUser = userRepository.save(existingUser);
+
+        historyService.logAction("UPDATE", "USER", savedUser.getUsername(), "admin", "Cập nhật hồ sơ: " + savedUser.getUsername());
+
+        return savedUser;
     }
 
     // 6. Xóa User
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("user.notfound", id);
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound", id));
         userRepository.deleteById(id);
+        historyService.logAction("DELETE", "USER", user.getUsername(), "admin", "Xóa tài khoản: " + user.getUsername());
     }
 }

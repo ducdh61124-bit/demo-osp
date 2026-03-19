@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -149,9 +149,7 @@ public class UserController {
         user.setOtpExpiryTime(null);
         userRepository.save(user);
 
-        Map<String, Object> successRes = new HashMap<>();
-        successRes.put("message", "Đổi mật khẩu thành công!");
-        return ResponseEntity.ok(successRes);
+        return ResponseEntity.ok(createResponse("password.reset.success", null));
     }
 
     // 6. PUT - CẬP NHẬT THÔNG TIN

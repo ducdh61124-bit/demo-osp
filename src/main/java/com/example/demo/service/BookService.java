@@ -12,6 +12,9 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private HistoryService historyService;
+
     //Lấy danh sách Sách
     public List<Book> findAllByOrderByTitleAsc(){
         return bookRepository.findAll();
@@ -19,14 +22,25 @@ public class BookService {
 
     //Lưu Sách
     public Book saveBook(Book book){
-        if (book.getId() == null) {
+        boolean isNew = (book.getId() == null);
+
+        if (isNew) {
             if (bookRepository.existsByTitle(book.getTitle()))
                 throw new RuntimeException("book.title.exists");
         } else {
             if (bookRepository.existsByTitleAndIdNot(book.getTitle(), book.getId()))
                 throw new RuntimeException("book.title.exists");
         }
-        return bookRepository.save(book);
+
+        Book savedBook = bookRepository.save(book);
+
+        if (isNew) {
+            historyService.logAction("CREATE", "BOOK", savedBook.getTitle(), "admin", "Thêm sách mới: " + savedBook.getTitle());
+        } else {
+            historyService.logAction("UPDATE", "BOOK", savedBook.getTitle(), "admin", "Cập nhật thông tin sách: " + savedBook.getTitle());
+        }
+
+        return savedBook;
     }
 
     //Tìm Sách theo ID
@@ -37,7 +51,9 @@ public class BookService {
 
     //Xóa Sách
     public void  deleteBookById(Integer id){
-        bookRepository.deleteById(id);
+        bookRepository.findById(id).ifPresent(book -> {
+            bookRepository.deleteById(id);
+            historyService.logAction("DELETE", "BOOK", book.getTitle(), "admin", "Xóa sách: " + book.getTitle());
+        });
     }
-
 }
