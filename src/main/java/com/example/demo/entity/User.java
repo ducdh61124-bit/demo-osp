@@ -13,9 +13,13 @@ public class User {
     private Long id;
     private String name;
     private String phone;
+    @Column(nullable = false, unique = true)
     private String email;
+    @Column(nullable = false, unique = true)
     private String username;
+    @Column(nullable = false)
     private String password;
+
     private String otpCode;
     private LocalDateTime otpExpiryTime;
 }

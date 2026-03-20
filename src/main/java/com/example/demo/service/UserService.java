@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.UserRepository;
@@ -57,7 +58,7 @@ public class UserService {
     }
 
     // 5. Cập nhật - PUT (Dùng cho cả sửa Profile và Quên mật khẩu)
-    public User updateUser(Long id, User updatedInfo) {
+    public User updateUser(Long id, UserUpdateDTO updatedInfo) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("user.notfound", id));
 
@@ -68,13 +69,36 @@ public class UserService {
             existingUser.setUsername(updatedInfo.getUsername());
         }
 
-        if (updatedInfo.getPassword() != null && !updatedInfo.getPassword().isEmpty()) {
-            existingUser.setPassword(updatedInfo.getPassword());
+        if (updatedInfo.getEmail() != null && !updatedInfo.getEmail().equals(existingUser.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(updatedInfo.getEmail(), id)) {
+                throw new RuntimeException("user.email.exists");
+            }
+            existingUser.setEmail(updatedInfo.getEmail());
         }
 
-        if (updatedInfo.getName() != null) existingUser.setName(updatedInfo.getName());
-        if (updatedInfo.getPhone() != null) existingUser.setPhone(updatedInfo.getPhone());
-        if (updatedInfo.getEmail() != null) existingUser.setEmail(updatedInfo.getEmail());
+        if (updatedInfo.getPhone() != null && !updatedInfo.getPhone().equals(existingUser.getPhone())) {
+            if (userRepository.existsByPhoneAndIdNot(updatedInfo.getPhone(), id)) {
+                throw new RuntimeException("user.phone.exists");
+            }
+            existingUser.setPhone(updatedInfo.getPhone());
+        }
+
+        if (updatedInfo.getName() != null) {
+            existingUser.setName(updatedInfo.getName());
+        }
+
+        if (updatedInfo.getOldPassword() != null && !updatedInfo.getOldPassword().isEmpty()) {
+            if (!existingUser.getPassword().equals(updatedInfo.getOldPassword())) {
+                throw new RuntimeException("Mật khẩu hiện tại không chính xác!");
+            }
+            if (updatedInfo.getNewPassword() != null && !updatedInfo.getNewPassword().isEmpty()) {
+                if (updatedInfo.getConfirmPassword() == null ||
+                        !updatedInfo.getNewPassword().equals(updatedInfo.getConfirmPassword())) {
+                    throw new RuntimeException("Mật khẩu xác nhận không khớp với mật khẩu mới!");
+                }
+                existingUser.setPassword(updatedInfo.getNewPassword());
+            }
+        }
 
         User savedUser = userRepository.save(existingUser);
 

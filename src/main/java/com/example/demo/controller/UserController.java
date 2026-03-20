@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -8,18 +9,13 @@ import com.example.demo.service.UserService;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.EmailService;
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @RestController
@@ -155,18 +151,22 @@ public class UserController {
     // 6. PUT - CẬP NHẬT THÔNG TIN
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody User updatedInfo) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UserUpdateDTO updatedInfo) {
         try {
             User updatedUser = userService.updateUser(id, updatedInfo);
             return ResponseEntity.ok(createResponse("user.update.success", updatedUser));
 
         } catch (ResourceNotFoundException e) {
-
             String errorMsg = messageSource.getMessage(e.getMessage(), null, LocaleContextHolder.getLocale());
             return ResponseEntity.status(404).body(errorMsg);
 
         } catch (RuntimeException e) {
-            String errorMsg = messageSource.getMessage(e.getMessage(), null, LocaleContextHolder.getLocale());
+            String errorMsg;
+            try {
+                errorMsg = messageSource.getMessage(e.getMessage(), null, LocaleContextHolder.getLocale());
+            } catch (Exception ex) {
+                errorMsg = e.getMessage();
+            }
             return ResponseEntity.badRequest().body(errorMsg);
         }
     }
