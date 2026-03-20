@@ -51,6 +51,9 @@ public class BookController {
         if (newInfo.getTitle() != null) bookCurrently.setTitle(newInfo.getTitle());
         if (newInfo.getImage() != null) bookCurrently.setImage(newInfo.getImage());
         if (newInfo.getStock() != null) bookCurrently.setStock(newInfo.getStock());
+        if (newInfo.getCategory() != null && newInfo.getCategory().getId() != null) {
+            bookCurrently.setCategory(newInfo.getCategory());
+        }
 
         bookService.saveBook(bookCurrently);
         String msg = messageSource.getMessage("book.update.success", null, LocaleContextHolder.getLocale());
