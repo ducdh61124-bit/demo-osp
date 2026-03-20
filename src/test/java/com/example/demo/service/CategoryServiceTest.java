@@ -15,6 +15,7 @@ import java.util.*;
 class CategoryServiceTest {
     @Mock private CategoryRepository categoryRepository;
     @InjectMocks private CategoryService categoryService;
+    @Mock private HistoryService historyService;
 
     @Test void findAll_ShouldReturnList() {
         when(categoryRepository.findAll()).thenReturn(Arrays.asList(new Category(), new Category()));
@@ -52,16 +53,19 @@ class CategoryServiceTest {
         assertThrows(RuntimeException.class, () -> categoryService.saveCategory(c));
     }
     @Test void save_WithBooks_ShouldRelink() {
-        Category c = new Category(); Book b = new Book();
+        Category c = new Category(); c.setName("IT");
+        Book b = new Book();
         c.setBooks(Collections.singletonList(b));
         when(categoryRepository.save(any())).thenReturn(c);
         categoryService.saveCategory(c);
         assertEquals(c, b.getCategory());
     }
     @Test void delete_Success() {
-        doNothing().when(categoryRepository).deleteById(1);
+        Category c = new Category(); c.setId(1); c.setName("IT");
+        when(categoryRepository.findById(1)).thenReturn(Optional.of(c));
         categoryService.deleteCategoryById(1);
-        verify(categoryRepository, times(1)).deleteById(1);
+        verify(categoryRepository).deleteById(1);
+        verify(historyService).logAction(any(), any(), any(), any(), any());
     }
     @Test void findAll_Empty() {
         when(categoryRepository.findAll()).thenReturn(new ArrayList<>());

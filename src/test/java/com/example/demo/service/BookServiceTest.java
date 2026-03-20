@@ -18,6 +18,7 @@ import java.util.*;
 class BookServiceTest {
     @Mock private BookRepository bookRepository;
     @InjectMocks private BookService bookService;
+    @Mock private HistoryService historyService;
 
     @Test void findAll_Ordered() {
         when(bookRepository.findAll()).thenReturn(Arrays.asList(new Book(), new Book()));
@@ -35,7 +36,7 @@ class BookServiceTest {
     @Test void save_New_Success() {
         Book b = new Book(); b.setTitle("Java");
         when(bookRepository.existsByTitle("Java")).thenReturn(false);
-        when(bookRepository.save(b)).thenReturn(b);
+        when(bookRepository.save(any())).thenReturn(b);
         assertNotNull(bookService.saveBook(b));
     }
     @Test void save_New_TitleExists() {
@@ -46,7 +47,7 @@ class BookServiceTest {
     @Test void save_Update_Success() {
         Book b = new Book(); b.setId(1); b.setTitle("Java");
         when(bookRepository.existsByTitleAndIdNot("Java", 1)).thenReturn(false);
-        when(bookRepository.save(b)).thenReturn(b);
+        when(bookRepository.save(any())).thenReturn(b);
         assertNotNull(bookService.saveBook(b));
     }
     @Test void save_Update_TitleExists() {
@@ -55,12 +56,16 @@ class BookServiceTest {
         assertThrows(RuntimeException.class, () -> bookService.saveBook(b));
     }
     @Test void delete_Success() {
+        Book b = new Book(); b.setId(1); b.setTitle("Test Book");
+        when(bookRepository.findById(1)).thenReturn(Optional.of(b));
         bookService.deleteBookById(1);
         verify(bookRepository).deleteById(1);
+        verify(historyService).logAction(any(), any(), any(), any(), any());
     }
     @Test void save_NullId_Check() {
         Book b = new Book(); b.setTitle("New");
         when(bookRepository.existsByTitle("New")).thenReturn(false);
+        when(bookRepository.save(any())).thenReturn(b); // Mock để tránh NPE
         bookService.saveBook(b);
         verify(bookRepository).existsByTitle("New");
     }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.example.demo.entity.User;
+import com.example.demo.dto.UserUpdateDTO;
 import com.example.demo.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,8 +16,14 @@ import com.example.demo.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    @Mock private UserRepository userRepository;
-    @InjectMocks private UserService userService;
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private HistoryService historyService;
+
+    @InjectMocks
+    private UserService userService;
 
     @Test void findByUsername_Found() {
         User u = new User(); u.setUsername("abc");
@@ -49,18 +56,19 @@ class UserServiceTest {
         assertThrows(RuntimeException.class, () -> userService.createUser(u));
     }
     @Test void update_UserNotFound() {
+        UserUpdateDTO dto = new UserUpdateDTO();
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(1L, new User()));
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(1L, dto));
     }
     @Test void update_DuplicateUsername() {
         User existing = new User(); existing.setId(1L); existing.setUsername("old");
-        User info = new User(); info.setUsername("new");
+        UserUpdateDTO info = new UserUpdateDTO(); info.setUsername("new");
         when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(userRepository.existsByUsernameAndIdNot("new", 1L)).thenReturn(true);
         assertThrows(RuntimeException.class, () -> userService.updateUser(1L, info));
     }
     @Test void delete_NotFound() {
-        when(userRepository.existsById(1L)).thenReturn(false);
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(1L));
     }
     @Test void getAllUsers_Success() {
